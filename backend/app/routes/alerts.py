@@ -13,6 +13,7 @@ def get_alerts(resolved: bool = None, db: Session = Depends(get_db)):
         query = query.filter(Alert.resolved == resolved)
     return query.order_by(desc(Alert.created_at)).limit(100).all()
 
+
 @router.patch("/{alert_id}/resolve")
 def resolve_alert(alert_id: str, db: Session = Depends(get_db)):
     alert = db.query(Alert).filter(Alert.id == alert_id).first()

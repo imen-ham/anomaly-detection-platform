@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
+
 DATABASE_URL = os.environ.get(
     "DATABASE_URL",
     "postgresql+pg8000://admin:admin123@postgres:5432/anomaly_db"

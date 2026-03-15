@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func, cast, Date
 from ..database import get_db
-from ..models import Transaction, Alert
+
 
 router = APIRouter()
 
@@ -25,30 +25,5 @@ def get_daily(db: Session = Depends(get_db)):
         cast(Transaction.timestamp, Date).label("day"),
         func.count(Transaction.id).label("total"),
         func.count(Transaction.id).filter(Transaction.is_anomaly == True).label("anomalies")
-    ).group_by(
-        cast(Transaction.timestamp, Date)
-    ).order_by(
-        cast(Transaction.timestamp, Date)
-    ).all()
-    return [{"day": str(r.day), "total": r.total, "anomalies": r.anomalies} for r in rows]
 
-
-@router.get("/risk-distribution")
-def get_risk_distribution(db: Session = Depends(get_db)):
-    txs = db.query(Transaction.risk_score).all()
-    segments = {
-        "Faible risque": 0,
-        "Risque modere": 0,
-        "Risque eleve": 0,
-        "Critique": 0
-    }
-    for (score,) in txs:
-        if score < 0.3:
-            segments["Faible risque"] += 1
-        elif score < 0.6:
-            segments["Risque modere"] += 1
-        elif score < 0.8:
-            segments["Risque eleve"] += 1
-        else:
-            segments["Critique"] += 1
     return [{"segment": k, "count": v} for k, v in segments.items()]

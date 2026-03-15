@@ -4,7 +4,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from .database import engine, Base
 from .routes import transactions, alerts, analytics
 
-# Crée les tables automatiquement au démarrage
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Anomaly Detection API", version="1.0.0")

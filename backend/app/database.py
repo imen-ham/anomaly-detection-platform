@@ -3,8 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
-# Dans Docker : on utilise le nom du service "postgres"
-# En local : on utilise localhost
+
 DATABASE_URL = os.environ.get(
     "DATABASE_URL",
     "postgresql+pg8000://admin:admin123@postgres:5432/anomaly_db"

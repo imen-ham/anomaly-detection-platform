@@ -24,24 +24,24 @@ def get_daily(db: Session = Depends(get_db)):
         cast(Transaction.timestamp, Date).label("day"),
         func.count(Transaction.id).label("total"),
         func.count(Transaction.id).filter(Transaction.is_anomaly == True).label("anomalies")
-    ).group_by(
-        cast(Transaction.timestamp, Date)
-    ).order_by(
-        cast(Transaction.timestamp, Date)
-    ).all()
-    return [{"day": str(r.day), "total": r.total, "anomalies": r.anomalies} for r in rows]
+    ).group_by(cast(Transaction.timestamp, Date)).order_by(cast(Transaction.timestamp, Date)).all()
+
+    return [
+        {"day": str(r.day), "total": int(r.total), "anomalies": int(r.anomalies)}
+        for r in rows
+    ]
 
 @router.get("/risk-distribution")
 def get_risk_distribution(db: Session = Depends(get_db)):
-    txs = db.query(Transaction.risk_score).all()
-    segments = {"Faible risque": 0, "Risque modere": 0, "Risque eleve": 0, "Critique": 0}
-    for (score,) in txs:
-        if score < 0.3:
-            segments["Faible risque"] += 1
-        elif score < 0.6:
-            segments["Risque modere"] += 1
-        elif score < 0.8:
-            segments["Risque eleve"] += 1
-        else:
-            segments["Critique"] += 1
+    low = db.query(Transaction).filter(Transaction.risk_score < 0.3).count()
+    medium = db.query(Transaction).filter(Transaction.risk_score >= 0.3, Transaction.risk_score < 0.6).count()
+    high = db.query(Transaction).filter(Transaction.risk_score >= 0.6, Transaction.risk_score < 0.8).count()
+    critical = db.query(Transaction).filter(Transaction.risk_score >= 0.8).count()
+
+    segments = {
+        "Faible": low,
+        "Modere": medium,
+        "Eleve": high,
+        "Critique": critical,
+    }
     return [{"segment": k, "count": v} for k, v in segments.items()]

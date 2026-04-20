@@ -39,6 +39,7 @@ def generate_transaction(user_id: str = None) -> dict:
         "merchant": MERCHANTS[idx],
         "category": CATEGORIES[idx],
         "country": country,
+        "timestamp": datetime.now(),
     }
 
 def generate_bulk(n: int = 10) -> list:

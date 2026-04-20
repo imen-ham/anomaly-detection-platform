@@ -48,8 +48,9 @@ def create_transaction(data: dict, db: Session = Depends(get_db)):
 def simulate_transactions(payload: dict, db: Session = Depends(get_db)):
     count = payload.get("count", 10)
     results = []
-    for tx_data in generate_bulk(count):
-        tx = Transaction(**tx_data)
+
+    for data in generate_bulk(count):
+        tx = Transaction(**data)
         tx.timestamp = datetime.now()
         score, is_anomaly, reasons = detect_anomaly(tx)
         tx.risk_score = score
@@ -62,10 +63,12 @@ def simulate_transactions(payload: dict, db: Session = Depends(get_db)):
                 alert = Alert(
                     transaction_id=tx.id,
                     alert_type=reason,
-                    severity="critical" if score > 0.7 else "high",
+                    severity="critical" if score > 0.7 else "high" if score > 0.5 else "medium",
                     message=f"Transaction suspecte: {reason} (score: {score})"
                 )
                 db.add(alert)
+
         results.append(tx)
+
     db.commit()
     return {"simulated": count, "anomalies": sum(1 for t in results if t.is_anomaly)}

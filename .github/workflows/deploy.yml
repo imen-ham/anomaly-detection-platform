@@ -7,11 +7,13 @@ on:
     branches: [ "main" ]
 
 env:
-  PROJECT_ID: anomaly-detection-495123
-  REGION: europe-west1
-  GAR_NAME: anomaly-repo
-  BACKEND_SERVICE: backend-api
-  FRONTEND_SERVICE: frontend-app
+  # Utilisation des variables GitHub pour une meilleure portabilité et sécurité
+  # Vous devez les configurer dans Settings > Secrets and variables > Actions > Variables
+  PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  REGION: ${{ vars.GCP_REGION }}
+  GAR_NAME: ${{ vars.GCP_GAR_NAME }}
+  BACKEND_SERVICE: ${{ vars.GCP_BACKEND_SERVICE }}
+  FRONTEND_SERVICE: ${{ vars.GCP_FRONTEND_SERVICE }}
 
 jobs:
   ci:
@@ -35,7 +37,8 @@ jobs:
       - name: Run Backend Tests
         run: |
           cd backend
-          # pytest  # Décommenter quand des tests seront écrits
+          # Vérification de la syntaxe python avant déploiement
+          python -m compileall .
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -96,7 +99,6 @@ jobs:
             --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_NAME }}/backend:${{ github.sha }} \
             --region ${{ env.REGION }} \
             --platform managed \
-            --port 8000 \
             --allow-unauthenticated
 
       - name: Deploy Frontend to Cloud Run

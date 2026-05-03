@@ -7,8 +7,6 @@ on:
     branches: [ "main" ]
 
 env:
-  # Utilisation des variables GitHub pour une meilleure portabilité et sécurité
-  # Vous devez les configurer dans Settings > Secrets and variables > Actions > Variables
   PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
   REGION: ${{ vars.GCP_REGION }}
   GAR_NAME: ${{ vars.GCP_GAR_NAME }}
@@ -32,13 +30,16 @@ jobs:
         run: |
           cd backend
           pip install -r requirements.txt
-          pip install pytest
+
+      - name: Check Backend Syntax
+        run: |
+          cd backend
+          python -m compileall .
 
       - name: Run Backend Tests
         run: |
           cd backend
-          # Vérification de la syntaxe python avant déploiement
-          python -m compileall .
+          pytest --collect-only # Vérifie que les tests peuvent être chargés
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -50,7 +51,7 @@ jobs:
       - name: Install Frontend Dependencies
         run: |
           cd frontend
-          npm install
+          npm ci
 
       - name: Lint Frontend
         run: |
@@ -81,7 +82,7 @@ jobs:
         uses: 'google-github-actions/setup-gcloud@v2'
 
       - name: Authorize Docker push
-        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+        run: gcloud auth configure-docker --quiet ${{ env.REGION }}-docker.pkg.dev
 
       - name: Build and Push Backend Image
         run: |

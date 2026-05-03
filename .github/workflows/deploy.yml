@@ -96,6 +96,7 @@ jobs:
             --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_NAME }}/backend:${{ github.sha }} \
             --region ${{ env.REGION }} \
             --platform managed \
+            --port 8000 \
             --allow-unauthenticated
 
       - name: Deploy Frontend to Cloud Run

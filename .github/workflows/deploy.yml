@@ -39,7 +39,7 @@ jobs:
       - name: Run Backend Tests
         run: |
           cd backend
-          pytest --collect-only # Vérifie que les tests peuvent être chargés
+          pytest
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

@@ -120,7 +120,7 @@ export default function SREAnalytics() {
             Statut: {slaStatus === 'On Track' ? 'Sur la bonne voie' : slaStatus === 'At Risk' ? 'À risque' : 'Critique'}
           </div>
           <div className="px-6 py-3 rounded-lg bg-slate-700 text-white font-semibold">
-            Santé: {errorBudget.health_status?.toUpperCase() === 'HEALTHY' ? 'SAIN' : errorBudget.health_status?.toUpperCase() === 'WARNING' ? 'ATTENTION' : 'CRITIQUE' || 'INCONNU'}
+            Santé: {errorBudget.health_status?.toUpperCase() === 'HEALTHY' ? 'SAIN' : errorBudget.health_status?.toUpperCase() === 'WARNING' ? 'ATTENTION' : 'CRITIQUE'}
           </div>
         </div>
 

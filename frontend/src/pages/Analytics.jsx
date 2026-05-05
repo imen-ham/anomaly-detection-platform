@@ -38,7 +38,7 @@ function transformAlertsBySeverity(alertsData) {
     }
   })
 
-  return Object.entries(severityMap).map(([_, data]) => ({
+  return Object.entries(severityMap).map(([, data]) => ({
     severity: data.label,
     total: data.total,
     resolved: data.resolved,

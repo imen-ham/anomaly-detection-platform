@@ -70,7 +70,7 @@ export default function Analytics() {
 
   // Calcul: Taux de résolution des alertes
   const alertsResolutionRate = alertsAnalysis?.resolution_status ? 
-    ((alertsAnalysis.resolved / (alertsAnalysis.resolved + alertsAnalysis.unresolved)) * 100).toFixed(1) : 
+    ((alertsAnalysis.resolution_status.resolved / alertsAnalysis.resolution_status.total) * 100).toFixed(1) : 
     '...'
 
   return (
@@ -87,7 +87,7 @@ export default function Analytics() {
         />
         <KPICard 
           title="Utilisateurs Haut Risque" 
-          value={userBehavior?.risk_segmentation?.high_risk ?? '...'} 
+          value={userBehavior?.risk_segmentation?.high_risk_users ?? '...'} 
           color="#f59e0b" 
           icon="👤"
         />
@@ -163,9 +163,9 @@ export default function Analytics() {
             <PieChart>
               <Pie 
                 data={[
-                  { name: 'Haut Risque', value: userBehavior?.risk_segmentation?.high_risk ?? 0 },
-                  { name: 'Risque Moyen', value: userBehavior?.risk_segmentation?.medium_risk ?? 0 },
-                  { name: 'Bas Risque', value: userBehavior?.risk_segmentation?.low_risk ?? 0 }
+                  { name: 'Haut Risque', value: userBehavior?.risk_segmentation?.high_risk_users ?? 0 },
+                  { name: 'Risque Moyen', value: userBehavior?.risk_segmentation?.medium_risk_users ?? 0 },
+                  { name: 'Bas Risque', value: userBehavior?.risk_segmentation?.low_risk_users ?? 0 }
                 ]}
                 dataKey="value"
                 cx="50%"
@@ -274,7 +274,7 @@ export default function Analytics() {
                 </tr>
               </thead>
               <tbody>
-                {(alertsAnalysis?.by_type ?? []).map((row, i) => (
+                {(alertsAnalysis?.alerts_by_type_severity ?? []).map((row, i) => (
                   <tr key={i} style={{ borderBottom: '1px solid #374151' }}>
                     <td style={{ padding: '8px' }}>{row.alert_type}</td>
                     <td style={{ padding: '8px', textAlign: 'right' }}>{row.total}</td>

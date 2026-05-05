@@ -1,0 +1,672 @@
+{
+  "annotations": [
+    {
+      "kind": "AnnotationQuery",
+      "spec": {
+        "builtIn": true,
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "query": {
+          "datasource": {
+            "name": "-- Grafana --"
+          },
+          "group": "grafana",
+          "kind": "DataQuery",
+          "spec": {},
+          "version": "v0"
+        }
+      }
+    }
+  ],
+  "cursorSync": "Off",
+  "editable": true,
+  "elements": {
+    "backend_availability": {
+      "kind": "Panel",
+      "spec": {
+        "id": 1,
+        "title": "Backend Availability (SLO: 99.5%)",
+        "description": "Backend API uptime vs SLO target of 99.5%",
+        "type": "timeseries",
+        "dataSource": {
+          "type": "prometheus",
+          "uid": "prometheus_uid",
+          "name": "Prometheus"
+        },
+        "links": [],
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "expr": "sre:backend_availability:1h",
+                "legendFormat": "Backend Availability (1h)",
+                "refId": "A",
+                "datasourceUid": "prometheus_uid"
+              }
+            ],
+            "transformations": [],
+            "queryOptions": {}
+          },
+          "group": "panel",
+          "version": "v0"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "lineWidth": 1,
+              "showPoints": "never"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "orange",
+                  "value": 0.95
+                },
+                {
+                  "color": "green",
+                  "value": 0.995
+                }
+              ]
+            },
+            "unit": "percentunit"
+          },
+          "overrides": []
+        },
+        "options": {
+          "legend": {
+            "calcs": ["mean", "last"],
+            "displayMode": "table",
+            "placement": "bottom"
+          }
+        }
+      }
+    },
+    "backend_error_rate": {
+      "kind": "Panel",
+      "spec": {
+        "id": 2,
+        "title": "Backend Error Rate",
+        "description": "Error rate vs SLO target of <0.1%",
+        "type": "timeseries",
+        "dataSource": {
+          "type": "prometheus",
+          "uid": "prometheus_uid",
+          "name": "Prometheus"
+        },
+        "links": [],
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "expr": "sre:backend_error_rate:5m",
+                "legendFormat": "Error Rate (SLO: <0.1%)",
+                "refId": "A",
+                "datasourceUid": "prometheus_uid"
+              }
+            ],
+            "transformations": [],
+            "queryOptions": {}
+          },
+          "group": "panel",
+          "version": "v0"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "lineWidth": 1,
+              "showPoints": "never"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "orange",
+                  "value": 0.001
+                },
+                {
+                  "color": "red",
+                  "value": 0.005
+                }
+              ]
+            },
+            "unit": "percentunit"
+          },
+          "overrides": []
+        },
+        "options": {
+          "legend": {
+            "calcs": ["mean", "last"],
+            "displayMode": "table",
+            "placement": "bottom"
+          }
+        }
+      }
+    },
+    "backend_latency": {
+      "kind": "Panel",
+      "spec": {
+        "id": 3,
+        "title": "Backend Latency (P95)",
+        "description": "P95 latency vs SLO target of 500ms",
+        "type": "timeseries",
+        "dataSource": {
+          "type": "prometheus",
+          "uid": "prometheus_uid",
+          "name": "Prometheus"
+        },
+        "links": [],
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"backend\"}[5m])) by (le))",
+                "legendFormat": "P95 Latency (SLO: 500ms)",
+                "refId": "A",
+                "datasourceUid": "prometheus_uid"
+              }
+            ],
+            "transformations": [],
+            "queryOptions": {}
+          },
+          "group": "panel",
+          "version": "v0"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "lineWidth": 1,
+              "showPoints": "never"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "orange",
+                  "value": 0.5
+                },
+                {
+                  "color": "red",
+                  "value": 1
+                }
+              ]
+            },
+            "unit": "s"
+          },
+          "overrides": []
+        },
+        "options": {
+          "legend": {
+            "calcs": ["mean", "last"],
+            "displayMode": "table",
+            "placement": "bottom"
+          }
+        }
+      }
+    },
+    "error_budget": {
+      "kind": "Panel",
+      "spec": {
+        "id": 4,
+        "title": "Error Budget Remaining (Backend)",
+        "description": "Days until error budget exhaustion",
+        "type": "gauge",
+        "dataSource": {
+          "type": "prometheus",
+          "uid": "prometheus_uid",
+          "name": "Prometheus"
+        },
+        "links": [],
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "expr": "sre:backend_days_until_budget_exhausted:30d",
+                "legendFormat": "Days until budget exhausted",
+                "refId": "A",
+                "datasourceUid": "prometheus_uid"
+              }
+            ],
+            "transformations": [],
+            "queryOptions": {}
+          },
+          "group": "panel",
+          "version": "v0"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "orange",
+                  "value": 1
+                },
+                {
+                  "color": "yellow",
+                  "value": 3
+                },
+                {
+                  "color": "green",
+                  "value": 7
+                }
+              ]
+            },
+            "unit": "d"
+          },
+          "overrides": []
+        },
+        "options": {
+          "orientation": "auto",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        }
+      }
+    },
+    "backend_status": {
+      "kind": "Panel",
+      "spec": {
+        "id": 5,
+        "title": "Backend Status",
+        "description": "Backend service operational status",
+        "type": "gauge",
+        "dataSource": {
+          "type": "prometheus",
+          "uid": "prometheus_uid",
+          "name": "Prometheus"
+        },
+        "links": [],
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "expr": "sre:backend_up:1m",
+                "legendFormat": "Backend Status",
+                "refId": "A",
+                "datasourceUid": "prometheus_uid"
+              }
+            ],
+            "transformations": [],
+            "queryOptions": {}
+          },
+          "group": "panel",
+          "version": "v0"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [
+              {
+                "options": {
+                  "0": {
+                    "color": "red",
+                    "text": "DOWN"
+                  },
+                  "1": {
+                    "color": "green",
+                    "text": "UP"
+                  }
+                },
+                "type": "value"
+              }
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "orientation": "auto",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        }
+      }
+    },
+    "postgres_status": {
+      "kind": "Panel",
+      "spec": {
+        "id": 6,
+        "title": "PostgreSQL Status",
+        "description": "PostgreSQL database operational status",
+        "type": "gauge",
+        "dataSource": {
+          "type": "prometheus",
+          "uid": "prometheus_uid",
+          "name": "Prometheus"
+        },
+        "links": [],
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "expr": "sre:postgres_up:1m",
+                "legendFormat": "Postgres Status",
+                "refId": "A",
+                "datasourceUid": "prometheus_uid"
+              }
+            ],
+            "transformations": [],
+            "queryOptions": {}
+          },
+          "group": "panel",
+          "version": "v0"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [
+              {
+                "options": {
+                  "0": {
+                    "color": "red",
+                    "text": "DOWN"
+                  },
+                  "1": {
+                    "color": "green",
+                    "text": "UP"
+                  }
+                },
+                "type": "value"
+              }
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "orientation": "auto",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        }
+      }
+    },
+    "frontend_status": {
+      "kind": "Panel",
+      "spec": {
+        "id": 7,
+        "title": "Frontend Status",
+        "description": "Frontend web application operational status",
+        "type": "gauge",
+        "dataSource": {
+          "type": "prometheus",
+          "uid": "prometheus_uid",
+          "name": "Prometheus"
+        },
+        "links": [],
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "expr": "sre:frontend_up:1m",
+                "legendFormat": "Frontend Status",
+                "refId": "A",
+                "datasourceUid": "prometheus_uid"
+              }
+            ],
+            "transformations": [],
+            "queryOptions": {}
+          },
+          "group": "panel",
+          "version": "v0"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [
+              {
+                "options": {
+                  "0": {
+                    "color": "red",
+                    "text": "DOWN"
+                  },
+                  "1": {
+                    "color": "green",
+                    "text": "UP"
+                  }
+                },
+                "type": "value"
+              }
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "orientation": "auto",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        }
+      }
+    }
+  },
+  "layout": {
+    "kind": "AutoGridLayout",
+    "spec": {
+      "columnWidthMode": "standard",
+      "items": [
+        {
+          "kind": "AutoGridLayoutItem",
+          "spec": {
+            "element": {
+              "kind": "Panel",
+              "name": "backend_availability"
+            },
+            "itemId": "backend_availability",
+            "h": 2,
+            "w": 2,
+            "x": 0,
+            "y": 0
+          }
+        },
+        {
+          "kind": "AutoGridLayoutItem",
+          "spec": {
+            "element": {
+              "kind": "Panel",
+              "name": "backend_error_rate"
+            },
+            "itemId": "backend_error_rate",
+            "h": 2,
+            "w": 2,
+            "x": 2,
+            "y": 0
+          }
+        },
+        {
+          "kind": "AutoGridLayoutItem",
+          "spec": {
+            "element": {
+              "kind": "Panel",
+              "name": "backend_latency"
+            },
+            "itemId": "backend_latency",
+            "h": 2,
+            "w": 2,
+            "x": 0,
+            "y": 2
+          }
+        },
+        {
+          "kind": "AutoGridLayoutItem",
+          "spec": {
+            "element": {
+              "kind": "Panel",
+              "name": "error_budget"
+            },
+            "itemId": "error_budget",
+            "h": 2,
+            "w": 2,
+            "x": 2,
+            "y": 2
+          }
+        },
+        {
+          "kind": "AutoGridLayoutItem",
+          "spec": {
+            "element": {
+              "kind": "Panel",
+              "name": "backend_status"
+            },
+            "itemId": "backend_status",
+            "h": 1,
+            "w": 1,
+            "x": 0,
+            "y": 4
+          }
+        },
+        {
+          "kind": "AutoGridLayoutItem",
+          "spec": {
+            "element": {
+              "kind": "Panel",
+              "name": "postgres_status"
+            },
+            "itemId": "postgres_status",
+            "h": 1,
+            "w": 1,
+            "x": 1,
+            "y": 4
+          }
+        },
+        {
+          "kind": "AutoGridLayoutItem",
+          "spec": {
+            "element": {
+              "kind": "Panel",
+              "name": "frontend_status"
+            },
+            "itemId": "frontend_status",
+            "h": 1,
+            "w": 1,
+            "x": 2,
+            "y": 4
+          }
+        }
+      ],
+      "maxColumnCount": 3,
+      "rowHeightMode": "standard"
+    }
+  },
+  "links": [],
+  "liveNow": false,
+  "preferences": {
+    "layout": {
+      "kind": "AutoGridLayout",
+      "spec": {
+        "columnWidthMode": "standard",
+        "items": [],
+        "maxColumnCount": 3,
+        "rowHeightMode": "standard"
+      }
+    }
+  },
+  "preload": false,
+  "tags": ["sre", "reliability"],
+  "timeSettings": {
+    "autoRefresh": "30s",
+    "autoRefreshIntervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ],
+    "fiscalYearStartMonth": 0,
+    "from": "now-6h",
+    "hideTimepicker": false,
+    "timezone": "browser",
+    "to": "now"
+  },
+  "title": "SRE - Service Reliability Dashboard",
+  "uid": "sre-dashboard",
+  "variables": [],
+  "version": 1
+}

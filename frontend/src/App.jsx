@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
 import Dashboard from './pages/Dashboard'
 import Transactions from './pages/Transactions'
 import Alerts from './pages/Alerts'
+import Analytics from './pages/Analytics'
+import SREAnalytics from './pages/SREAnalytics'
 import './index.css'
 
 const queryClient = new QueryClient()
@@ -17,6 +19,12 @@ export default function App() {
             <NavLink to="/" end className={({isActive}) => isActive ? 'nav-link active' : 'nav-link'}>
               <span>📊</span> Dashboard
             </NavLink>
+            <NavLink to="/analytics" className={({isActive}) => isActive ? 'nav-link active' : 'nav-link'}>
+              <span>📈</span> Analytics
+            </NavLink>
+            <NavLink to="/sre" className={({isActive}) => isActive ? 'nav-link active' : 'nav-link'}>
+              <span>🎯</span> SRE
+            </NavLink>
             <NavLink to="/transactions" className={({isActive}) => isActive ? 'nav-link active' : 'nav-link'}>
               <span>💳</span> Transactions
             </NavLink>
@@ -27,6 +35,8 @@ export default function App() {
           <main className="main-content">
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/sre" element={<SREAnalytics />} />
               <Route path="/transactions" element={<Transactions />} />
               <Route path="/alerts" element={<Alerts />} />
             </Routes>

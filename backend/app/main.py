@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
 from .database import engine, Base, SessionLocal
-from .routes import transactions, alerts, analytics
+from .routes import transactions, alerts, analytics, sre
 from .models import Transaction, Alert
 from .services.simulator import generate_bulk
 from .services.anomaly_detector import detect_anomaly
@@ -28,6 +28,7 @@ Instrumentator().instrument(app).expose(app)
 app.include_router(transactions.router, prefix="/api/transactions", tags=["Transactions"])
 app.include_router(alerts.router, prefix="/api/alerts", tags=["Alerts"])
 app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"])
+app.include_router(sre.router, prefix="/api/analytics", tags=["SRE"])
 
 @app.on_event("startup")
 def seed_data():

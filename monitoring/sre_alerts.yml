@@ -1,0 +1,179 @@
+groups:
+  - name: sre_indicators
+    interval: 15s
+    rules:
+      # ===== AVAILABILITY =====
+      
+      # Backend API availability (5 minute window)
+      - record: sre:backend_availability:5m
+        expr: |
+          (sum(rate(http_requests_total{job="backend",status=~"[2-3]..",le="+Inf"}[5m])) or vector(0))
+          /
+          (sum(rate(http_requests_total{job="backend",le="+Inf"}[5m])) or vector(0))
+      
+      # Backend API availability (1 hour window)
+      - record: sre:backend_availability:1h
+        expr: |
+          (sum(increase(http_requests_total{job="backend",status=~"[2-3]..",le="+Inf"}[1h])) or vector(0))
+          /
+          (sum(increase(http_requests_total{job="backend",le="+Inf"}[1h])) or vector(0))
+      
+      # Backend error rate
+      - record: sre:backend_error_rate:5m
+        expr: |
+          sum(rate(http_requests_total{job="backend",status=~"5.."}[5m]))
+          /
+          sum(rate(http_requests_total{job="backend"}[5m]))
+      
+      # ===== LATENCY =====
+      
+      # Backend P95 latency (5 minute window)
+      - record: sre:backend_latency_p95:5m
+        expr: |
+          histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="backend"}[5m])) by (le, endpoint))
+      
+      # ===== ERROR BUDGET =====
+      
+      # Backend monthly error budget burn rate
+      # Budget = 0.5% = 1 - SLO (99.5%)
+      # Si on consomme tout le budget en 1 jour, burn_rate = 30 (car budget = 30 days)
+      - record: sre:backend_error_budget_burn_rate:30d
+        expr: |
+          (1 - sre:backend_availability:1h) / 0.005
+      
+      # Estimated days until error budget exhausted
+      - record: sre:backend_days_until_budget_exhausted:30d
+        expr: |
+          30 * (1 - sre:backend_availability:1h) / 0.005
+      
+      # ===== SERVICE UP/DOWN =====
+      
+      # Backend service status (1 = up, 0 = down)
+      - record: sre:backend_up:1m
+        expr: up{job="backend"}
+      
+      # Frontend service status
+      - record: sre:frontend_up:1m
+        expr: up{job="frontend"} or vector(0)
+      
+      # PostgreSQL service status
+      - record: sre:postgres_up:1m
+        expr: up{job="postgres"} or vector(0)
+
+  - name: sre_alerts
+    interval: 15s
+    rules:
+      # ===== AVAILABILITY ALERTS =====
+      
+      - alert: HighErrorRate
+        expr: sre:backend_error_rate:5m > 0.001  # > 0.1%
+        for: 2m
+        labels:
+          severity: warning
+          sre: "true"
+        annotations:
+          summary: "Taux d'erreur élevé détecté"
+          description: "{{ $value | humanizePercentage }} des requêtes du backend retournent une erreur"
+          runbook: "https://example.com/runbooks/high-error-rate"
+      
+      - alert: CriticalErrorRate
+        expr: sre:backend_error_rate:5m > 0.005  # > 0.5%
+        for: 1m
+        labels:
+          severity: critical
+          sre: "true"
+        annotations:
+          summary: "CRITIQUE : Taux d'erreur critique"
+          description: "{{ $value | humanizePercentage }} des requêtes du backend échouent"
+      
+      # ===== LATENCY ALERTS =====
+      
+      - alert: HighLatency
+        expr: sre:backend_latency_p95:5m > 1  # > 1 second
+        for: 5m
+        labels:
+          severity: warning
+          sre: "true"
+        annotations:
+          summary: "Latence élevée détectée"
+          description: "P95 latency = {{ $value | humanizeDuration }}"
+      
+      - alert: CriticalLatency
+        expr: sre:backend_latency_p95:5m > 2  # > 2 seconds
+        for: 1m
+        labels:
+          severity: critical
+          sre: "true"
+        annotations:
+          summary: "CRITIQUE : Latence critique"
+          description: "P95 latency = {{ $value | humanizeDuration }} (SLO = 500ms)"
+      
+      # ===== ERROR BUDGET ALERTS =====
+      
+      - alert: ErrorBudgetLow
+        expr: sre:backend_days_until_budget_exhausted:30d < 3  # Moins de 3 jours restants
+        for: 5m
+        labels:
+          severity: warning
+          sre: "true"
+        annotations:
+          summary: "Error budget faible"
+          description: "{{ $value | humanize }} jours de budget d'erreur restants pour le backend"
+          recommendation: "Envisager d'arrêter les déploiements risqués et se concentrer sur la stabilité"
+      
+      - alert: ErrorBudgetCritical
+        expr: sre:backend_days_until_budget_exhausted:30d < 1  # Moins de 1 jour
+        for: 2m
+        labels:
+          severity: critical
+          sre: "true"
+        annotations:
+          summary: "Error budget critique - URGENT"
+          description: "Moins de 1 jour de budget d'erreur restant"
+          recommendation: "Arrêter immédiatement les changements et investiguer les problèmes"
+      
+      # ===== UPTIME ALERTS =====
+      
+      - alert: BackendDown
+        expr: sre:backend_up:1m == 0
+        for: 1m
+        labels:
+          severity: critical
+          sre: "true"
+        annotations:
+          summary: "Backend API est down"
+          description: "Le service backend n'est pas accessible"
+      
+      - alert: LowUptime
+        expr: sre:backend_availability:1h < 0.99  # < 99%
+        for: 10m
+        labels:
+          severity: warning
+          sre: "true"
+        annotations:
+          summary: "Disponibilité faible sur la dernière heure"
+          description: "Uptime = {{ $value | humanizePercentage }} (SLO = 99.5%)"
+      
+      # ===== FRONTEND ALERTS =====
+      
+      - alert: FrontendDown
+        expr: sre:frontend_up:1m == 0
+        for: 2m
+        labels:
+          severity: high
+          sre: "true"
+        annotations:
+          summary: "Frontend est down"
+          description: "Le service frontend n'est pas accessible"
+      
+      # ===== DATABASE ALERTS =====
+      
+      - alert: PostgresDown
+        expr: sre:postgres_up:1m == 0
+        for: 1m
+        labels:
+          severity: critical
+          sre: "true"
+        annotations:
+          summary: "PostgreSQL est down"
+          description: "La base de données n'est pas accessible"
